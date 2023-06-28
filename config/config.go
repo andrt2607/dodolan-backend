@@ -23,9 +23,9 @@ func ConnectDataBase() *gorm.DB {
 	}
 
 	db.AutoMigrate(&models.Customer{},
-		// &models.Order{},
-		// &models.OrderItem{},
-		// &models.Payment{},
+		&models.Order{},
+		&models.OrderItem{},
+		&models.Payment{},
 		&models.Seller{},
 		&models.Product{})
 
