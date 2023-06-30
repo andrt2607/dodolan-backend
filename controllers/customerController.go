@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"dodolan/models"
+	"dodolan/utils"
 	"net/http"
 	"time"
 
@@ -81,13 +82,13 @@ func GetProductsByCustomerId(c *gin.Context) {
 }
 
 // CreateCustomer godoc
-// @Summary Create New Customer.
+// @Summary Register New Customer.
 // @Description Creating a new Customer.
 // @Tags Customer
-// @Param Body body input true "the body to create a new Customer"
+// @Param Body body customerDTO true "the body to create a new Customer"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /customers [post]
+// @Router /customers/register [post]
 func CreateCustomer(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var input customerDTO
@@ -99,13 +100,21 @@ func CreateCustomer(c *gin.Context) {
 		return
 	}
 
+	hashedPassword, err := utils.HashPassword(input.Password)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	//create CreateCustomer
 	Customer := models.Customer{
 		FirstName:  input.FirstName,
 		LastName:   input.LastName,
 		Email:      input.Email,
 		Username:   input.Username,
-		Password:   input.Password,
+		Password:   hashedPassword,
 		Address:    input.Address,
 		City:       input.City,
 		Country:    input.Country,
@@ -133,7 +142,7 @@ func CreateCustomer(c *gin.Context) {
 // @Tags Customer
 // @Produce json
 // @Param id path string true "Customer id"
-// @Param Body body input true "the body to update an Customer"
+// @Param Body body customerDTO true "the body to update an Customer"
 // @Success 200 {object} map[string]interface{}
 // @Router /customers/{id} [put]
 func UpdateCustomer(c *gin.Context) {

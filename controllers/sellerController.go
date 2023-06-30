@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"dodolan/models"
+	"dodolan/utils"
 	"net/http"
 	"time"
 
@@ -56,7 +57,7 @@ func GetSellerById(c *gin.Context) {
 }
 
 // GetProductsBySellerId godoc
-// @Summary Get Products.
+// @Summary Get Products by seller id.
 // @Description Get all Products by Seller Id.
 // @Tags Seller
 // @Produce json
@@ -76,13 +77,13 @@ func GetProductsBySellerId(c *gin.Context) {
 }
 
 // CreateSeller godoc
-// @Summary Create New Seller.
+// @Summary Register New Seller.
 // @Description Creating a new Seller.
 // @Tags Seller
-// @Param Body body input true "the body to create a new Seller"
+// @Param Body body SellerDTO true "the body to create a new Seller"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
-// @Router /sellers [post]
+// @Router /sellers/register [post]
 func CreateSeller(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var input SellerDTO
@@ -94,11 +95,19 @@ func CreateSeller(c *gin.Context) {
 		return
 	}
 
+	hashedPassword, err := utils.HashPassword(input.Password)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	//create CreateSeller
 	seller := models.Seller{
 		Name:     input.Name,
 		Username: input.Username,
-		Password: input.Password,
+		Password: hashedPassword,
 		Address:  input.Address,
 		Phone:    input.Phone,
 	}
@@ -113,7 +122,7 @@ func CreateSeller(c *gin.Context) {
 // @Tags Seller
 // @Produce json
 // @Param id path string true "seller id"
-// @Param Body body input true "the body to update an Seller"
+// @Param Body body SellerDTO true "the body to update an Seller"
 // @Success 200 {object} map[string]interface{}
 // @Router /Sellers/{id} [put]
 func UpdateSeller(c *gin.Context) {

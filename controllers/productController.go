@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"dodolan/models"
+	"dodolan/utils/token"
 	"net/http"
 	"time"
 
@@ -60,7 +61,9 @@ func GetProductById(c *gin.Context) {
 // @Summary Create New Product.
 // @Description Creating a new Product.
 // @Tags Product
-// @Param Body body input true "the body to create a new product"
+// @Security BearerToken
+// @Param Authorization header string true "Authorization. How to input in swagger : 'Bearer <insert_your_token_here>'"
+// @Param Body body productDTO true "the body to create a new product"
 // @Produce json
 // @Success 200 {object} map[string]interface{}
 // @Router /products [post]
@@ -72,6 +75,14 @@ func CreateProduct(c *gin.Context) {
 	//harus bentuk json
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": err.Error()})
+		return
+	}
+
+	userToken, _ := token.ExtractTokenRole(c)
+	if userToken != "SELLER" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "You are unauthorized to access this resource, this resource for SELLER user",
+		})
 		return
 	}
 
@@ -95,13 +106,13 @@ func CreateProduct(c *gin.Context) {
 }
 
 // GetSellerByProduct godoc
-// @Summary Get Seller by product id.
+// @Summary Get All Seller by product id.
 // @Description Get all seller by product id .
 // @Tags Product
 // @Produce json
 // @Param id path string true "Product Id"
 // @Success 200 {object} []models.Seller
-// @Router /age-rating-categories/{id}/products/:id/sellers [get]
+// @Router /products/{id}/sellers [get]
 func GetSellerByProduct(c *gin.Context) { // Get model if exist
 	var sellers []models.Seller
 
@@ -120,8 +131,10 @@ func GetSellerByProduct(c *gin.Context) { // Get model if exist
 // @Description Update Product by id.
 // @Tags Product
 // @Produce json
+// @Security BearerToken
+// @Param Authorization header string true "Authorization. How to input in swagger : 'Bearer <insert_your_token_here>'"
 // @Param id path string true "seller id"
-// @Param Body body input true "the body to update an product"
+// @Param Body body productDTO true "the body to update an product"
 // @Success 200 {object} map[string]interface{}
 // @Router /products/{id} [put]
 func UpdateProduct(c *gin.Context) {
@@ -133,6 +146,15 @@ func UpdateProduct(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Record not found!"})
 		return
 	}
+
+	userToken, _ := token.ExtractTokenRole(c)
+	if userToken != "SELLER" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "You are unauthorized to access this resource, this resource for SELLER user",
+		})
+		return
+	}
+
 	//harus bentuk json
 	var input productDTO
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -162,12 +184,22 @@ func UpdateProduct(c *gin.Context) {
 // @Description Delete a product by id.
 // @Tags Product
 // @Produce json
+// @Security BearerToken
+// @Param Authorization header string true "Authorization. How to input in swagger : 'Bearer <insert_your_token_here>'"
 // @Param id path string true "product id"
 // @Success 200 {object} map[string]interface{}
 // @Router /products/{id} [delete]
 func DeleteProduct(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var product models.Product
+
+	userToken, _ := token.ExtractTokenRole(c)
+	if userToken != "SELLER" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "You are unauthorized to access this resource, this resource for SELLER user",
+		})
+		return
+	}
 
 	//cek seller ada atau tidak
 	if err := db.Where("product_id = ?", c.Param("id")).First(&product).Error; err != nil {
