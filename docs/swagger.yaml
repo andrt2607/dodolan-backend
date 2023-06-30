@@ -1,0 +1,834 @@
+definitions:
+  controllers.LoginInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  controllers.SellerDTO:
+    properties:
+      address:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
+  controllers.customerDTO:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      postal_code:
+        type: string
+      username:
+        type: string
+    type: object
+  controllers.orderDTO:
+    properties:
+      customer_id:
+        type: integer
+      price:
+        type: number
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      total_amount:
+        type: number
+    type: object
+  controllers.paymentDTO:
+    properties:
+      amount:
+        type: number
+      uid_order:
+        type: string
+    type: object
+  controllers.productDTO:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      seller_id:
+        type: integer
+      stock:
+        type: integer
+    type: object
+  models.Product:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      seller_id:
+        type: integer
+      stock:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.Seller:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+paths:
+  /Sellers/{id}:
+    delete:
+      description: Delete a Seller by id.
+      parameters:
+      - description: Seller id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete one Seller.
+      tags:
+      - Seller
+    put:
+      description: Update Seller by id.
+      parameters:
+      - description: seller id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: the body to update an Seller
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.SellerDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update Seller.
+      tags:
+      - Seller
+  /customer/login:
+    post:
+      description: Logging in to get jwt token to access customer api by roles.
+      parameters:
+      - description: the body to login a customer
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login as customer.
+      tags:
+      - Auth
+  /customers:
+    get:
+      description: Get a list of Customer.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all Customer.
+      tags:
+      - Customer
+  /customers/{id}:
+    delete:
+      description: Delete a Customer by id.
+      parameters:
+      - description: Customer id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete one Customer.
+      tags:
+      - Customer
+    get:
+      description: Get a Customer by id.
+      parameters:
+      - description: Customer id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get Customer.
+      tags:
+      - Customer
+    put:
+      description: Update Customer by id.
+      parameters:
+      - description: Customer id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: the body to update an Customer
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.customerDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update Customer.
+      tags:
+      - Customer
+  /customers/{id}/products:
+    get:
+      description: Get all Products by Customer Id.
+      parameters:
+      - description: Customer id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get Products.
+      tags:
+      - Customer
+  /customers/register:
+    post:
+      description: Creating a new Customer.
+      parameters:
+      - description: the body to create a new Customer
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.customerDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register New Customer.
+      tags:
+      - Customer
+  /order:
+    get:
+      description: Get a list of Order.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Get all Order.
+      tags:
+      - Order
+  /order_item:
+    get:
+      description: Get a list of OrderItem.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Get all OrderItems.
+      tags:
+      - Order
+  /orders:
+    post:
+      description: Creating a new Order.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: the body to create a new Order
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.orderDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Create Order.
+      tags:
+      - Order
+  /orders/{id}:
+    delete:
+      description: Delete a Order by id.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Order id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Delete one Order.
+      tags:
+      - Order
+    put:
+      description: Update Order by id.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: order id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: the body to update an Order
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.orderDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Update Order.
+      tags:
+      - Order
+  /payments:
+    get:
+      description: Get a list of payments.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Get all payments.
+      tags:
+      - Payments
+    post:
+      description: Creating a new payment.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: the body to create a new payments
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.paymentDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Create New payment.
+      tags:
+      - Payments
+  /payments/{id}:
+    delete:
+      description: Delete a payment by id.
+      parameters:
+      - description: payment id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete one payment.
+      tags:
+      - Payments
+    get:
+      description: Get a payments by id.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: payments id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Get payment by id
+      tags:
+      - Payments
+    put:
+      description: Update payments by id.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: payments id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: the body to update an payments
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.paymentDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Update payments.
+      tags:
+      - Payments
+  /payments/{id}/orders:
+    get:
+      description: Get all Orders by payments Id.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: payment id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Get Orders By Payment ID.
+      tags:
+      - Payments
+  /products:
+    get:
+      description: Get a list of Product.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all Product.
+      tags:
+      - Product
+    post:
+      description: Creating a new Product.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: the body to create a new product
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.productDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Create New Product.
+      tags:
+      - Product
+  /products/{id}:
+    delete:
+      description: Delete a product by id.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: product id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Delete one product.
+      tags:
+      - Product
+    get:
+      description: Get a Product by id.
+      parameters:
+      - description: product id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Product'
+      summary: Get Product.
+      tags:
+      - Product
+    put:
+      description: Update Product by id.
+      parameters:
+      - description: 'Authorization. How to input in swagger : ''Bearer <insert_your_token_here>'''
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: seller id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: the body to update an product
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.productDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerToken: []
+      summary: Update Product.
+      tags:
+      - Product
+  /products/{id}/sellers:
+    get:
+      description: Get all seller by product id .
+      parameters:
+      - description: Product Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Seller'
+            type: array
+      summary: Get All Seller by product id.
+      tags:
+      - Product
+  /seller/login:
+    post:
+      description: Logging in to get jwt token to access seller api by roles.
+      parameters:
+      - description: the body to login a seller
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login as seller.
+      tags:
+      - Auth
+  /sellers:
+    get:
+      description: Get a list of Seller.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all Seller.
+      tags:
+      - Seller
+  /sellers/{id}:
+    get:
+      description: Get a Seller by id.
+      parameters:
+      - description: Seller id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get Seller.
+      tags:
+      - Seller
+  /sellers/{id}/products:
+    get:
+      description: Get all Products by Seller Id.
+      parameters:
+      - description: Seller id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get Products by seller id.
+      tags:
+      - Seller
+  /sellers/register:
+    post:
+      description: Creating a new Seller.
+      parameters:
+      - description: the body to create a new Seller
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.SellerDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register New Seller.
+      tags:
+      - Seller
+swagger: "2.0"
