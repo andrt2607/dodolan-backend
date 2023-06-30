@@ -2,6 +2,7 @@ package config
 
 import (
 	"dodolan/models"
+	"dodolan/utils"
 	"fmt"
 
 	"gorm.io/driver/mysql"
@@ -9,14 +10,20 @@ import (
 )
 
 func ConnectDataBase() *gorm.DB {
-	username := "root"
-	password := ""
-	host := "tcp(127.0.0.1:3306)"
-	database := "db_dodolan"
+	// username := "root"
+	// password := ""
+	// host := "tcp(127.0.0.1:3306)"
+	// database := "db_dodolan"
+	username := utils.Getenv("DATABASE_USERNAME", "root")
+	password := utils.Getenv("DATABASE_PASSWORD", "")
+	host := utils.Getenv("DATABASE_HOST", "127.0.0.1")
+	port := utils.Getenv("DATABASE_PORT", "3306")
+	database := utils.Getenv("DATABASE_NAME", "db_dodolan")
 
-	dsn := fmt.Sprintf("%v:%v@%v/%v?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, database)
-
+	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, port, database)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	// dsn := fmt.Sprintf("%v:%v@%v/%v?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, database)
+	// db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		panic(err.Error())
