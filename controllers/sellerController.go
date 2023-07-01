@@ -7,15 +7,22 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 type SellerDTO struct {
-	Name     string
-	Username string
-	Password string
-	Address  string
-	Phone    string
+	Name     string `validate:"required, min=4, max=15"`
+	Username string `validate:"required, min=4,max=16"`
+	Password string `validate:"required max=8"`
+	Address  string `validate:"required"`
+	Phone    string `validate:"required, numeric, len=12"`
+}
+
+type SellerUpdateDTO struct {
+	Name    string `validate:"required, min=4, max=15"`
+	Address string `validate:"required"`
+	Phone   string `validate:"required, numeric, len=12"`
 }
 
 // GetSeller godoc
@@ -34,7 +41,7 @@ func GetSellers(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data Kosong"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": sellers})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data sellerberhasil ditemukan", "data": sellers})
 }
 
 // GetSellerById godoc
@@ -53,7 +60,7 @@ func GetSellerById(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Seller not found!"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": Seller})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data seller id " + c.Param("id") + "berhasil ditemukan", "data": Seller})
 }
 
 // GetProductsBySellerId godoc
@@ -69,11 +76,11 @@ func GetProductsBySellerId(c *gin.Context) {
 
 	db := c.MustGet("db").(*gorm.DB)
 	if err := db.Where("seller_id = ?", c.Param("id")).First(&products).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Record not found!"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Products not found!"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": products})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data products berhasil ditemukan", "data": products})
 }
 
 // CreateSeller godoc
@@ -87,9 +94,7 @@ func GetProductsBySellerId(c *gin.Context) {
 func CreateSeller(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var input SellerDTO
-	// var seller models.Seller
 
-	//harus bentuk json
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": err.Error()})
 		return
@@ -103,7 +108,6 @@ func CreateSeller(c *gin.Context) {
 		return
 	}
 
-	//create CreateSeller
 	seller := models.Seller{
 		Name:     input.Name,
 		Username: input.Username,
@@ -111,9 +115,17 @@ func CreateSeller(c *gin.Context) {
 		Address:  input.Address,
 		Phone:    input.Phone,
 	}
+	validate := validator.New()
+	errValidate := validate.Struct(seller)
+	if errValidate != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValidate.Error(),
+		})
+		return
+	}
 	db.Create(&seller)
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditambah", "data": seller})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data seller berhasil ditambah", "data": seller})
 }
 
 // UpdateSeller godoc
@@ -122,40 +134,37 @@ func CreateSeller(c *gin.Context) {
 // @Tags Seller
 // @Produce json
 // @Param id path string true "seller id"
-// @Param Body body SellerDTO true "the body to update an Seller"
+// @Param Body body SellerUpdateDTO true "the body to update an Seller"
 // @Success 200 {object} map[string]interface{}
 // @Router /Sellers/{id} [put]
 func UpdateSeller(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var Seller models.Seller
-	// var seller models.Seller
-	//cek dulu id Seller yg ingin diupdate
 	if err := db.Where("seller_id = ?", c.Param("id")).First(&Seller).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Record not found!"})
 		return
 	}
-	//harus bentuk json
-	var input SellerDTO
+	var input SellerUpdateDTO
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": err.Error()})
 		return
 	}
 
-	//cek seller ada atau tidak
-	// if err := db.Where("id = ?", input.SellerId).First(&seller).Error; err != nil {
-	//       c.JSON(http.StatusBadRequest, gin.H{"error":true, "message": "Seller not found!"})
-	//       return
-	//   }
-
 	var updatedInput models.Seller
 	updatedInput.Name = input.Name
 	updatedInput.Address = input.Address
-	// updatedInput.SellerId = input.SellerId
 	updatedInput.UpdatedAt = time.Now()
-
+	validate := validator.New()
+	errValidate := validate.Struct(updatedInput)
+	if errValidate != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValidate.Error(),
+		})
+		return
+	}
 	db.Model(&Seller).Updates(updatedInput)
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Berhasil update Seller", "data": Seller})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Berhasil update Seller id " + c.Param("id"), "data": Seller})
 }
 
 // DeleteSeller godoc
@@ -170,11 +179,10 @@ func DeleteSeller(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var Seller models.Seller
 
-	//cek seller ada atau tidak
 	if err := db.Where("seller_id = ?", c.Param("id")).First(&Seller).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Seller not found!"})
 		return
 	}
 	db.Delete(&Seller)
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil dihapus", "data": Seller})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data seller id " + c.Param("id") + "berhasil dihapus", "data": Seller})
 }

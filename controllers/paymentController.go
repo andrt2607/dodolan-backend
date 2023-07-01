@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
@@ -43,7 +44,7 @@ func GetPayments(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data Kosong"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": payments})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data payment berhasil ditemukan", "data": payments})
 }
 
 // GetPaymentsById godoc
@@ -74,7 +75,7 @@ func GetPaymentById(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "payment not found!"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": payment})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data payment id " + c.Param("id") + "berhasil ditemukan", "data": payment})
 }
 
 // GetOrdersByPaymentId godoc
@@ -106,7 +107,7 @@ func GetOrdersByPaymentId(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": orders})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data orders berhasil ditemukan", "data": orders})
 }
 
 // CreatePayment godoc
@@ -154,9 +155,17 @@ func CreatePayment(c *gin.Context) {
 		Amount:      input.Amount,
 		OrderId:     order.OrderId,
 	}
+	validate := validator.New()
+	errValAmount := validate.Var(input.Amount, "required")
+	if errValAmount != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValAmount.Error(),
+		})
+		return
+	}
 	db.Create(&payments)
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditambah", "data": payments})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data payment berhasil ditambah", "data": payments})
 }
 
 // UpdatePayment godoc
@@ -199,9 +208,18 @@ func UpdatePayment(c *gin.Context) {
 	updatedInput.Amount = input.Amount
 	updatedInput.UpdatedAt = time.Now()
 
+	validate := validator.New()
+	errValAmount := validate.Var(input.Amount, "required")
+	if errValAmount != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValAmount.Error(),
+		})
+		return
+	}
+
 	db.Model(&payments).Updates(updatedInput)
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Berhasil update payments", "data": payments})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Berhasil update payment id " + c.Param("id"), "data": payments})
 }
 
 // DeletePayment godoc
@@ -217,7 +235,6 @@ func DeletePayment(c *gin.Context) {
 	var payments models.Payment
 
 	userToken, _ := token.ExtractTokenRole(c)
-	//harus role cusstomer
 	if userToken != "CUSTOMER" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"error": "You are unauthorized to access this resource, this resource for customer user",
@@ -225,11 +242,10 @@ func DeletePayment(c *gin.Context) {
 		return
 	}
 
-	//cek payments ada atau tidak
 	if err := db.Where("uid_payment = ?", c.Param("id")).First(&payments).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "payments not found!"})
 		return
 	}
 	db.Delete(&payments)
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil dihapus", "data": payments})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data payment id " + c.Param("id") + " berhasil dihapus", "data": payments})
 }

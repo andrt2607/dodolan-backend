@@ -94,7 +94,6 @@ func ExtractTokenRole(c *gin.Context) (interface{}, error) {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		// uid, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["user_id"]), 10, 32)
 		stringRole := claims["role"]
 		if err != nil {
 			return "error", err

@@ -49,7 +49,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.SellerDTO"
+                            "$ref": "#/definitions/controllers.SellerUpdateDTO"
                         }
                     }
                 ],
@@ -229,7 +229,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.customerDTO"
+                            "$ref": "#/definitions/controllers.updateCustomerDTO"
                         }
                     }
                 ],
@@ -1122,6 +1122,12 @@ const docTemplate = `{
         },
         "controllers.SellerDTO": {
             "type": "object",
+            "required": [
+                "address",
+                "name",
+                "phone",
+                "username"
+            ],
             "properties": {
                 "address": {
                     "type": "string"
@@ -1136,12 +1142,43 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string",
+                    "maxLength": 16
+                }
+            }
+        },
+        "controllers.SellerUpdateDTO": {
+            "type": "object",
+            "required": [
+                "address",
+                "name",
+                "phone"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 }
             }
         },
         "controllers.customerDTO": {
             "type": "object",
+            "required": [
+                "address",
+                "city",
+                "country",
+                "email",
+                "first_name",
+                "last_name",
+                "phone",
+                "postal_code",
+                "username"
+            ],
             "properties": {
                 "address": {
                     "type": "string"
@@ -1156,10 +1193,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "first_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 15
                 },
                 "last_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 15
                 },
                 "password": {
                     "type": "string"
@@ -1171,7 +1210,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 16
                 }
             }
         },
@@ -1226,6 +1266,47 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.updateCustomerDTO": {
+            "type": "object",
+            "required": [
+                "address",
+                "city",
+                "country",
+                "email",
+                "first_name",
+                "last_name",
+                "phone",
+                "postal_code"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 15
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 15
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Product": {
             "type": "object",
             "properties": {
@@ -1257,6 +1338,12 @@ const docTemplate = `{
         },
         "models.Seller": {
             "type": "object",
+            "required": [
+                "address",
+                "name",
+                "phone",
+                "username"
+            ],
             "properties": {
                 "address": {
                     "type": "string"
@@ -1280,7 +1367,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 16
                 }
             }
         }

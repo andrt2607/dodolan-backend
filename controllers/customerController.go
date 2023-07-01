@@ -7,20 +7,32 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 type customerDTO struct {
-	FirstName  string `json:"first_name"`
-	LastName   string `json:"last_name"`
-	Email      string `json:"email"`
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	Address    string `json:"address"`
-	City       string `json:"city"`
-	Country    string `json:"country"`
-	PostalCode string `json:"postal_code"`
-	Phone      string `json:"phone"`
+	FirstName  string `json:"first_name" validate:"required, min=4,max=15"`
+	LastName   string `json:"last_name" validate:"required, min=4,max=15"`
+	Email      string `json:"email" validate:"required, email"`
+	Username   string `json:"username" validate:"required, min=4,max=16"`
+	Password   string `json:"password" validate:"required max=8"`
+	Address    string `json:"address" validate:"required"`
+	City       string `json:"city" validate:"required"`
+	Country    string `json:"country" validate:"required"`
+	PostalCode string `json:"postal_code" validate:"required, len=5"`
+	Phone      string `json:"phone" validate:"required, numeric, len=12"`
+}
+
+type updateCustomerDTO struct {
+	FirstName  string `json:"first_name" validate:"required, min=4,max=15"`
+	LastName   string `json:"last_name" validate:"required, min=4,max=15"`
+	Email      string `json:"email" validate:"required, email"`
+	Address    string `json:"address" validate:"required"`
+	City       string `json:"city" validate:"required"`
+	Country    string `json:"country" validate:"required"`
+	PostalCode string `json:"postal_code" validate:"required, len=5"`
+	Phone      string `json:"phone" validate:"required, numeric, len=12"`
 }
 
 // GetCustomers godoc
@@ -39,7 +51,7 @@ func GetCustomers(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data Kosong"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": customers})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data Customer berhasil ditemukan", "data": customers})
 }
 
 // GetCustomerById godoc
@@ -58,7 +70,7 @@ func GetCustomerById(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Customer not found!"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": Customer})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Customer berhasil ditemukan", "data": Customer})
 }
 
 // GetProductsByCustomerId godoc
@@ -74,11 +86,11 @@ func GetProductsByCustomerId(c *gin.Context) {
 
 	db := c.MustGet("db").(*gorm.DB)
 	if err := db.Where("customer_id = ?", c.Param("id")).First(&products).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Record not found!"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Products not found!"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": products})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Products berhasil ditemukan", "data": products})
 }
 
 // CreateCustomer godoc
@@ -92,9 +104,7 @@ func GetProductsByCustomerId(c *gin.Context) {
 func CreateCustomer(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var input customerDTO
-	// var Customer models.Customer
 
-	//harus bentuk json
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": err.Error()})
 		return
@@ -108,7 +118,6 @@ func CreateCustomer(c *gin.Context) {
 		return
 	}
 
-	//create CreateCustomer
 	Customer := models.Customer{
 		FirstName:  input.FirstName,
 		LastName:   input.LastName,
@@ -120,20 +129,18 @@ func CreateCustomer(c *gin.Context) {
 		Country:    input.Country,
 		PostalCode: input.PostalCode,
 		Phone:      input.Phone,
-		// 	FirstName  string
-		// LastName   string
-		// Email      string
-		// Username   string
-		// Password   string
-		// Address    string
-		// City       string
-		// Country    string
-		// PostalCode string
-		// Phone      string
+	}
+	validate := validator.New()
+	errValidate := validate.Struct(Customer)
+	if errValidate != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValidate.Error(),
+		})
+		return
 	}
 	db.Create(&Customer)
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditambah", "data": Customer})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Customer berhasil ditambah", "data": Customer})
 }
 
 // UpdateCustomer godoc
@@ -142,57 +149,44 @@ func CreateCustomer(c *gin.Context) {
 // @Tags Customer
 // @Produce json
 // @Param id path string true "Customer id"
-// @Param Body body customerDTO true "the body to update an Customer"
+// @Param Body body updateCustomerDTO true "the body to update an Customer"
 // @Success 200 {object} map[string]interface{}
 // @Router /customers/{id} [put]
 func UpdateCustomer(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var Customer models.Customer
-	// var Customer models.Customer
-	//cek dulu id Customer yg ingin diupdate
 	if err := db.Where("customer_id = ?", c.Param("id")).First(&Customer).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Record not found!"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Customer not found!"})
 		return
 	}
-	//harus bentuk json
-	var input customerDTO
+	var input updateCustomerDTO
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": err.Error()})
 		return
 	}
 
-	//cek Customer ada atau tidak
-	// if err := db.Where("id = ?", input.CustomerId).First(&Customer).Error; err != nil {
-	//       c.JSON(http.StatusBadRequest, gin.H{"error":true, "message": "Customer not found!"})
-	//       return
-	//   }
-
 	var updatedInput models.Customer
 	updatedInput.FirstName = input.FirstName
 	updatedInput.LastName = input.LastName
-	updatedInput.Username = input.Username
-	updatedInput.Password = input.Password
 	updatedInput.Address = input.Address
 	updatedInput.City = input.City
 	updatedInput.Country = input.Country
 	updatedInput.PostalCode = input.PostalCode
 	updatedInput.Phone = input.Phone
-	// FirstName  string
-	// LastName   string
-	// Email      string
-	// Username   string
-	// Password   string
-	// Address    string
-	// City       string
-	// Country    string
-	// PostalCode string
-	// Phone      string
-	// updatedInput.CustomerId = input.CustomerId
 	updatedInput.UpdatedAt = time.Now()
+
+	validate := validator.New()
+	errValidate := validate.Struct(Customer)
+	if errValidate != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValidate.Error(),
+		})
+		return
+	}
 
 	db.Model(&Customer).Updates(updatedInput)
 
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Berhasil update Customer", "data": Customer})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Berhasil update Customer " + c.Param("id")})
 }
 
 // DeleteCustomer godoc
@@ -207,11 +201,10 @@ func DeleteCustomer(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var Customer models.Customer
 
-	//cek Customer ada atau tidak
 	if err := db.Where("customer_id = ?", c.Param("id")).First(&Customer).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Customer not found!"})
 		return
 	}
 	db.Delete(&Customer)
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil dihapus", "data": Customer})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data customer id " + c.Param("id") + "berhasil dihapus"})
 }

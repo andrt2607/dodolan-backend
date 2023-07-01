@@ -6,18 +6,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 type LoginInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-type RegisterInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-	Email    string `json:"email" binding:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required, max=8"`
 }
 
 // LoginCustomer godoc
@@ -50,10 +45,14 @@ func LoginCustomer(c *gin.Context) {
 		return
 	}
 
-	// user := map[string]string{
-	// 	"username": u.Username,
-	// 	"email":    u.Email,
-	// }
+	validate := validator.New()
+	errValidate := validate.Struct(input)
+	if errValidate != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValidate.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "login customer success", "username": u.Username, "token": token})
 
@@ -89,10 +88,14 @@ func LoginSeller(c *gin.Context) {
 		return
 	}
 
-	// user := map[string]string{
-	// 	"username": u.Username,
-	// 	"email":    u.Email,
-	// }
+	validate := validator.New()
+	errValidate := validate.Struct(input)
+	if errValidate != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValidate.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "login seller success", "username": u.Username, "token": token})
 

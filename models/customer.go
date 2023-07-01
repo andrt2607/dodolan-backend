@@ -11,16 +11,16 @@ import (
 
 type Customer struct {
 	CustomerId int       `gorm:"primary_key" json:"id"`
-	FirstName  string    `json:"first_name"`
-	LastName   string    `json:"last_name"`
-	Email      string    `json:"email"`
-	Username   string    `json:"username"`
-	Password   string    `json:"password"`
-	Address    string    `json:"address"`
-	City       string    `json:"city"`
-	Country    string    `json:"country"`
-	PostalCode string    `json:"postal_code"`
-	Phone      string    `json:"phone"`
+	FirstName  string    `json:"first_name" validate:"required, min=4,max=15"`
+	LastName   string    `json:"last_name" validate:"required, min=4,max=15"`
+	Email      string    `json:"email" validate:"required, email"`
+	Username   string    `json:"username" validate:"required, min=4,max=16"`
+	Password   string    `json:"password" validate:"required max=8"`
+	Address    string    `json:"address" validate:"required"`
+	City       string    `json:"city" validate:"required"`
+	Country    string    `json:"country" validate:"required"`
+	PostalCode string    `json:"postal_code" validate:"required, len=5"`
+	Phone      string    `json:"phone" validate:"required, numeric, len=12"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	Orders     []Order   `json:"-"`
@@ -60,20 +60,3 @@ func LoginCheckCustomer(username string, password string, db *gorm.DB) (string, 
 	return token, nil
 
 }
-
-// func (u *Customer) SaveCustomerAsUser(db *gorm.DB) (*Customer, error) {
-// 	//turn password into hash
-// 	hashedPassword, errPassword := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-// 	if errPassword != nil {
-// 		return &Customer{}, errPassword
-// 	}
-// 	u.Password = string(hashedPassword)
-// 	//remove spaces in username
-// 	u.Username = html.EscapeString(strings.TrimSpace(u.Username))
-
-// 	var err error = db.Create(&u).Error
-// 	if err != nil {
-// 		return &Customer{}, err
-// 	}
-// 	return u, nil
-// }

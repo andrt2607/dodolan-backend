@@ -37,7 +37,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.SellerDTO"
+                            "$ref": "#/definitions/controllers.SellerUpdateDTO"
                         }
                     }
                 ],
@@ -217,7 +217,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.customerDTO"
+                            "$ref": "#/definitions/controllers.updateCustomerDTO"
                         }
                     }
                 ],
@@ -1110,6 +1110,12 @@
         },
         "controllers.SellerDTO": {
             "type": "object",
+            "required": [
+                "address",
+                "name",
+                "phone",
+                "username"
+            ],
             "properties": {
                 "address": {
                     "type": "string"
@@ -1124,12 +1130,43 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string",
+                    "maxLength": 16
+                }
+            }
+        },
+        "controllers.SellerUpdateDTO": {
+            "type": "object",
+            "required": [
+                "address",
+                "name",
+                "phone"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 }
             }
         },
         "controllers.customerDTO": {
             "type": "object",
+            "required": [
+                "address",
+                "city",
+                "country",
+                "email",
+                "first_name",
+                "last_name",
+                "phone",
+                "postal_code",
+                "username"
+            ],
             "properties": {
                 "address": {
                     "type": "string"
@@ -1144,10 +1181,12 @@
                     "type": "string"
                 },
                 "first_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 15
                 },
                 "last_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 15
                 },
                 "password": {
                     "type": "string"
@@ -1159,7 +1198,8 @@
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 16
                 }
             }
         },
@@ -1214,6 +1254,47 @@
                 }
             }
         },
+        "controllers.updateCustomerDTO": {
+            "type": "object",
+            "required": [
+                "address",
+                "city",
+                "country",
+                "email",
+                "first_name",
+                "last_name",
+                "phone",
+                "postal_code"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 15
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 15
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Product": {
             "type": "object",
             "properties": {
@@ -1245,6 +1326,12 @@
         },
         "models.Seller": {
             "type": "object",
+            "required": [
+                "address",
+                "name",
+                "phone",
+                "username"
+            ],
             "properties": {
                 "address": {
                     "type": "string"
@@ -1268,7 +1355,8 @@
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 16
                 }
             }
         }

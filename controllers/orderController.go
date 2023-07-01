@@ -10,40 +10,20 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 func generateRandomID() string {
-	// Menentukan panjang byte untuk ID acak
-	// Disarankan untuk menggunakan setidaknya 16 byte (128 bit) untuk kekuatan keamanan yang baik
-	// Di sini, kita menggunakan 32 byte (256 bit)
 	length := 32
-
-	// Membuat buffer dengan panjang yang ditentukan
 	buffer := make([]byte, length)
-
-	// Membaca byte acak ke dalam buffer
 	_, err := rand.Read(buffer)
 	if err != nil {
 		panic(err)
 	}
-
-	// Mengonversi byte menjadi string dengan encoding base64
-	// Ini menghasilkan string yang lebih panjang, tetapi memiliki karakter yang lebih aman untuk penggunaan di URL
 	randomID := base64.URLEncoding.EncodeToString(buffer)
-
-	// Mengembalikan ID acak
 	return randomID
 }
-
-// import (
-// 	"dodolan/models"
-// 	"net/http"
-// 	"time"
-
-// 	"github.com/gin-gonic/gin"
-// 	"gorm.io/gorm"
-// )
 
 type orderDTO struct {
 	ProductId   int `json:"product_id"`
@@ -80,7 +60,7 @@ func GetOrders(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data Kosong"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": orders})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data order id " + c.Param("id") + " berhasil ditemukan", "data": orders})
 }
 
 // GetOrderItem godoc
@@ -110,7 +90,7 @@ func GetOrderItems(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data Kosong"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil ditemukan", "data": orderItems})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data orderitem id " + c.Param("id") + "berhasil ditemukan", "data": orderItems})
 }
 
 // CreateOrder godoc
@@ -126,10 +106,6 @@ func GetOrderItems(c *gin.Context) {
 func CreateOrder(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var input orderDTO
-	// var order models.Order
-	// var orderItem models.OrderItem
-
-	//harus bentuk json
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": err.Error()})
 		return
@@ -152,6 +128,14 @@ func CreateOrder(c *gin.Context) {
 		OrderDate:   time.Now(),
 		CustomerId:  input.CustomerId,
 		TotalAmount: input.TotalAmount,
+	}
+	validate := validator.New()
+	errValidate := validate.Struct(order)
+	if errValidate != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValidate.Error(),
+		})
+		return
 	}
 	db.Create(&order)
 	var targetOrder models.Order
@@ -217,8 +201,6 @@ func UpdateOrderItem(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Order not found!"})
 		return
 	}
-	// fmt.Println("ini value totalamount : ", input.TotalAmount)
-	// fmt.Println("ini value totalamount dari order: ", targetOrder.TotalAmount)
 	var updatedInput models.OrderItem
 	updatedInput.ProductId = input.ProductId
 	updatedInput.Quantity = input.Quantity
@@ -229,11 +211,18 @@ func UpdateOrderItem(c *gin.Context) {
 	updatedOrderInput.UpdatedAt = time.Now()
 	updatedInput.UpdatedAt = time.Now()
 
+	validate := validator.New()
+	errValidate := validate.Var(input.TotalAmount, "required")
+	if errValidate != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": errValidate.Error(),
+		})
+		return
+	}
 	db.Model(&orderItem).Updates(updatedInput)
 
 	db.Model(&order).Updates(updatedOrderInput)
-	fmt.Println("ini value id order item : ", orderItem.OrderId)
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Berhasil update order item", "data": updatedInput})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Berhasil update order id " + c.Param("id") + "item", "data": updatedInput})
 }
 
 // DeleteOrder godoc
@@ -271,5 +260,5 @@ func DeleteOrder(c *gin.Context) {
 	}
 	db.Delete(&orderItem)
 	db.Delete(&order)
-	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data berhasil dihapus", "data": orderItem})
+	c.JSON(http.StatusOK, gin.H{"error": false, "message": "Data order id " + c.Param("id") + "berhasil dihapus", "data": orderItem})
 }

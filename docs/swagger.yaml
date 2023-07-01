@@ -20,7 +20,26 @@ definitions:
       phone:
         type: string
       username:
+        maxLength: 16
         type: string
+    required:
+    - address
+    - name
+    - phone
+    - username
+    type: object
+  controllers.SellerUpdateDTO:
+    properties:
+      address:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    required:
+    - address
+    - name
+    - phone
     type: object
   controllers.customerDTO:
     properties:
@@ -33,8 +52,10 @@ definitions:
       email:
         type: string
       first_name:
+        maxLength: 15
         type: string
       last_name:
+        maxLength: 15
         type: string
       password:
         type: string
@@ -43,7 +64,18 @@ definitions:
       postal_code:
         type: string
       username:
+        maxLength: 16
         type: string
+    required:
+    - address
+    - city
+    - country
+    - email
+    - first_name
+    - last_name
+    - phone
+    - postal_code
+    - username
     type: object
   controllers.orderDTO:
     properties:
@@ -77,6 +109,36 @@ definitions:
         type: integer
       stock:
         type: integer
+    type: object
+  controllers.updateCustomerDTO:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        maxLength: 15
+        type: string
+      last_name:
+        maxLength: 15
+        type: string
+      phone:
+        type: string
+      postal_code:
+        type: string
+    required:
+    - address
+    - city
+    - country
+    - email
+    - first_name
+    - last_name
+    - phone
+    - postal_code
     type: object
   models.Product:
     properties:
@@ -114,7 +176,13 @@ definitions:
       updated_at:
         type: string
       username:
+        maxLength: 16
         type: string
+    required:
+    - address
+    - name
+    - phone
+    - username
     type: object
 info:
   contact:
@@ -159,7 +227,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/controllers.SellerDTO'
+          $ref: '#/definitions/controllers.SellerUpdateDTO'
       produces:
       - application/json
       responses:
@@ -258,7 +326,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/controllers.customerDTO'
+          $ref: '#/definitions/controllers.updateCustomerDTO'
       produces:
       - application/json
       responses:
